@@ -1,0 +1,21 @@
+schema: osera-patch-evidence/0.1.0
+producer: moderne
+release: 2.29.5-backpatch-00001
+baseline: v2.29.4+backpatch.baseline
+fixes:
+  - cve: CVE-2026-17495
+    upstream_fix_url: https://github.com/moment/moment/commit/5f7d983c9881e65e07574de9dda3190d99520c07
+    advisory_url: https://nvd.nist.gov/vuln/detail/CVE-2026-17495
+    patch_commit_url: https://github.com/moderne-backpatch-alliance/backpatch-moment/compare/4f49220~1...00d2c8d
+    basis: adapted
+    artifacts:
+      - moment
+    note: "New in this release; upstream's fix in 2.31.0, adapted to 2.29.4. It closes the advisory: moment vulnerable to Path Traversal via crafted non-string locale name."
+tests:
+  commit: 00d2c8d908606185fdd21756c57a266aae553241
+  command: grunt transpile update-index component uglify:main, npm pack --ignore-scripts of the npm_prepublish file set, then node-qunit over the transpiled tests for each of the four entry files, each test recorded into the JUnit report
+  runtime: Node.js v22.16.0, npm 11.4.2, macOS 27.2 arm64
+  report: moment-2.29.5-backpatch-00001-tests.zip
+  report_sha256: bda0117b5de2d5fc9d6a7c3ed3473db2217c0fb23fcdeef3aef6309bcc2074ec
+  result: pass
+  note: "upstream's QUnit suite (src/test transpiled by grunt, every test/moment and test/locale file under node-qunit) on the packed package's moment.js, min/moment.min.js, min/moment-with-locales.js and min/moment-with-locales.min.js at the tested commit: 15288 tests, 15288 passed, 0 failed, 0 skipped. The CVE tests (src/test/moment/locale.js src/test/moment/locale_inheritance.js src/test/moment/locale_update.js), with this release's production lines reverted at the tested commit: 61 tests, 57 passed, 4 failed, 0 skipped; with them: 61 tests, 61 passed, 0 failed, 0 skipped. Built with the tag's release build (grunt transpile update-index component uglify:main, uglify-js 3.16.1), the tag's scripts/npm_prepublish.sh file set, npm pack --ignore-scripts in a directory named moment, 524 of npmjs's 533 files for 2.29.4 are identical; the rest are dist/moment.js, min/moment-with-locales.js, min/moment-with-locales.min.js, min/moment-with-locales.min.js.map, min/moment.min.js, min/moment.min.js.map, moment.js, package.json, src/lib/locale/locales.js. The archive's file-origins.yaml maps each packaged file to the commit, or names its inputs and build."
