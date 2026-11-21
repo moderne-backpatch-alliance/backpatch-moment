@@ -139092,7 +139092,7 @@
 
     test('lazy load parentLocale', function (assert) {
         moment.defineLocale('de_test', {
-            parentLocale: 'de',
+            parentLocale: 'DE',
             monthsShort: [
                 'M1',
                 'M2',
@@ -139111,7 +139111,7 @@
         assert.equal(
             moment.locale(),
             'de_test',
-            'failed to lazy load parentLocale'
+            'lazy loads a parentLocale with a normalized name'
         );
     });
 
@@ -139505,6 +139505,31 @@
         moment.updateLocale('de', null);
     });
 
+    test('lazy load locale with normalized name before update', function (assert) {
+        var locale = moment.updateLocale('DE', { monthsShort: ['JAN'] }),
+            january = locale.months(moment.utc([2017, 0]));
+
+        assert.equal(
+            january,
+            'Januar',
+            'inherits the lazy-loaded locale configuration'
+        );
+        assert.equal(locale._abbr, 'de', 'returns the normalized locale');
+        assert.equal(moment.locale(), 'de', 'sets the normalized locale globally');
+        assert.equal(
+            moment.locales().indexOf('DE'),
+            -1,
+            'does not create an unnormalized locale entry'
+        );
+
+        moment.updateLocale('DE', null);
+        assert.notEqual(
+            moment.localeData('de').monthsShort(moment.utc([2017, 0]), ''),
+            'JAN',
+            'resets the normalized locale using the original name'
+        );
+    });
+
     test('update non-existing locale', function (assert) {
         moment.locale('en');
         moment.updateLocale('dude', { months: ['Movember'] });
@@ -139749,6 +139774,46 @@
 
         moment.locale('EN_gb');
         assert.equal(moment.locale(), 'en-gb', 'Normalize locale key underscore');
+        assert.equal(
+            indexOf.call(moment.locales(), 'EN_gb'),
+            -1,
+            'Do not cache the unnormalized locale key'
+        );
+        assert.equal(
+            indexOf.call(moment.locales(), 'en_gb'),
+            -1,
+            'Do not cache a partially normalized locale key'
+        );
+    });
+
+    test('preserve exact custom locale names', function (assert) {
+        moment.defineLocale('Mixed_Custom', { months: ['Movember'] });
+
+        assert.equal(
+            moment.localeData('Mixed_Custom')._abbr,
+            'Mixed_Custom',
+            'finds a custom locale before normalizing its name'
+        );
+        assert.equal(
+            moment.locale(),
+            'Mixed_Custom',
+            'sets a custom locale using its exact name'
+        );
+
+        moment.defineLocale('Mixed_Custom', null);
+    });
+
+    test('do not load invalid built-in locale names', function (assert) {
+        var invalidNames = ['.', '..', 'locale name', 'en@gb'];
+
+        each(invalidNames, function (name) {
+            moment.localeData(name);
+            assert.equal(
+                indexOf.call(moment.locales(), name),
+                -1,
+                'does not cache invalid locale name "' + name + '"'
+            );
+        });
     });
 
     test('library setter array of locales', function (assert) {
